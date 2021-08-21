@@ -7,9 +7,6 @@ interests:
 - Machine Learning
 - Data Visualization
 social:
-- icon: envelope
-  icon_pack: fas
-  link: /#contact
 - display:
     header: true
 - icon: github
@@ -22,5 +19,5 @@ superuser: true
 title: Andrew Fraijo
 ---
 
-I am a data scientist with experience in Public Health, Healthcare, and the mortgage industry. 
+I am a data scientist with experience in Public Health, Healthcare, and the mortgage industry. I will use the blog to explore data science techniques in areas that I am interested in such as urbanism, conservation, and finance. 
 

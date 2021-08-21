@@ -1,0 +1,92 @@
+---
+title: Covid and the Base Rate Fallacy
+author: Andrew Fraijo
+date: '2021-08-19'
+slug: covid-and-the-base-rate-fallacy
+categories: []
+tags: ['probabiliy', 'public health']
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-08-19T19:45:19-04:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+```{r Setup, echo = FALSE}
+options(scipen = 8)
+```
+
+## Introduction
+
+This was not going to be my first post here but lately I have seen a lot of news about vaccinated individuals coming down with Covid-19. A common misconception is that since the majority of Covid positive cases are vaccinated people the vaccine does not actually help anyone. As someone with a lot of experience with public health this worries me because people need to get vaccinated. As a mathematician and data scientist this worries me because it signals a lack of understanding of the base rate fallacy. 
+
+The base rate fallacy is the idea that when someone sees a specific rate (vaccinated Covid cases) but ignores the population rate (portion of the population that is vaccinated). To take a specific example I pulled the Covid-19 data for the country of Iceland for August 17th, 2021. Iceland is a good example for several reasons:
+
+* As an island nation they can control the entry of the disease into the country
+* A high vaccination rate 
+* A recent outbreak so that we can see the base rate fallacy in action
+
+Here is the information we need: with a population of 356,991 there are 260,598 people are vaccinated; on August 17th there were 124 positive Covid-19 cases, of those 64 were vaccinated, 4 were partially vaccinated, and 56 were not vaccinated. For this example we will count the partially vaccinated individuals as unvaccinated. 
+
+## A Short Statistical Hypothesis Test
+
+The first question we should ask is whether these numbers are possible. We can perform a statistical hypothesis test to determine if this. I have a rant saved up about how I feel about hypothesis testing and how it is taught, but I will save that for some other time. In this case we are testing if these numbers could actually happen if the chance of getting Covid-19 was the same for both vaccinated and unvaccinated people. If you have taken a introductory probability or combinatorics course, this should sound a lot like pulling red and blue balls from an urn with replacement. This leads us to using the hypergeometric distribution for the test. 
+
+```{r Hypothesis test}
+library(distributional)
+## m is the number of vaccinated people, n the number of unvaccinated people
+## k is the number of people with Covid
+dist <- dist_hypergeometric(m = 260598, n = 96393, k = 124)
+## We have 64 vaccinated positive cases
+p <- cdf(dist, 64)
+print(p)
+```
+
+The above R code finds the probability that when 124 people test positive for Covid-19 64 or less have been vaccinated, given the population dynamics of Iceland. This is a common way to check for under-representation in a sample. In this case the probability is very small, far smaller than the typical value of *p* = 0.05, and we can reject the null hypothesis that the probability of getting Covid is the same for both unvaccinated and vaccinated people.
+
+## Using Bayes Theorem
+
+Ok, so we know that it is unlikely that the two probabilities are the same. What we want to find out is the probability that a vaccinated person contracts Covid-19. Let's set some terminology
+
+* $\mathbf A$ is the event that someone is vaccinated
+* $\mathbf B$ is the event that someone contracts Covid
+* $P(x)$ is the probability of the event x
+* $P(x \mid y)$ is the probability of x given y
+
+This means the value we want is $P(B \mid A)$ and we can use Bayes Theorem to find this value.
+
+$$P(B \mid A) = \frac {P(A \mid B) P(B)}{P(A)}$$
+We can use the values we have for Iceland as estimates for these values.
+```{r Calculate Values}
+p_A <- 260598/356991
+p_B <- 124/356991
+p_AB <- 64/124
+p_BA <- (p_AB * p_B)/p_A
+print(p_BA)
+```
+
+Given this data it appears that a vaccinated person has less than a 0.02456% chance of acquiring Covid. Which seems very small, but how does this compare to an unvaccinated person? We can use the same formula but now let $\mathbf C$ represent someone not being vaccinated. 
+
+$$P(B \mid C) = \frac {P(C \mid B) P(B)}{P(C)}$$
+```{r Calcuate Second}
+p_C <- 96393/356991
+p_CB <- 60/124
+p_BC <- (p_CB * p_B)/p_C
+print(p_BC)
+```
+This tells us that an unvaccinated person has about a 0.06225% chance of getting Covid and that is over 2.5 times the probability for a vaccinated person. 
+
+## Conclusion
+Now some caveats: 
+
+1. This is reported positive cases. Evidence has shown that many people end up with asymptomatic Covid. Part of the reason for choosing Iceland for this data is that they do have a good testing regime both at the border and internally. This reduces the possibility of a case not being caught
+2. All vaccines are treated the same here. I did not look for vaccine brand data, mostly because I do not think it really matters. Each of the major vaccines (Pfizer, Moderna, Johnson and Johnson) has different efficacy reported but all are extremely high. Some of the other vaccines have lower efficacy rates
+3. These estimates are based on a fairly closed population with few demographic differences. Iceland is not a replacement for major urban areas with diverse demographics or areas with mixed urban/rural populations. That's fine though! This is just an example to help understand a particular fallacy and not a detailed study on Covid-19 vaccination
+
+Now for some actual conclusions. First, getting vaccinated against Covid-19 greatly reduces your chances of catching the virus. Second, the more people who are vaccinated the higher the chance that number of breakthrough cases is greater than the number of unvaccinated cases. When we see the second point as a rate though, i.e. 51.6% of Covid positive cases are vaccinated people, you can easily miss the first point. 
+

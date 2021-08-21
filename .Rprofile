@@ -26,5 +26,5 @@ options(blogdown.hugo.version = "0.84.4",
         # to disable knitting Rmd files on save, set this option to FALSE
         blogdown.knit.on_save = FALSE,    
         blogdown.author = "Andrew Fraijo",  
-        blogdown.ext = ".Rmarkdown",      
+        blogdown.ext = ".Rmd",      
         blogdown.subdir = "post"          )
